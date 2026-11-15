@@ -11,7 +11,7 @@ import {
   PageHeader,
   RiskBadge,
 } from "../components/ui";
-import { SpringBar } from "../components/motion";
+import { Reveal, SpringBar } from "../components/motion";
 import { fmtLacs } from "../utils/format";
 import { loadLastProperty, saveLastProperty } from "../utils/storage";
 
@@ -33,7 +33,7 @@ export default function RiskAssessment() {
   return (
     <div>
       <PageHeader
-        eyebrow="03 · Risk Engine"
+        eyebrow="Risk Engine"
         title="Property Risk Assessment"
         description="A documented academic-prototype methodology (v1.0.0) over measurable listing-data indicators — not a legal due-diligence service or a validated investment-risk model. Missing RERA information is never treated as proof of non-compliance."
       />
@@ -76,22 +76,26 @@ export default function RiskAssessment() {
                   </span>
                 </div>
                 <div className="mt-5 space-y-3">
-                  {Object.entries(data.domains).map(([key, d]) => (
+                  {Object.entries(data.domains).map(([key, d], i) => (
                     <div key={key}>
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-400">{DOMAIN_LABELS[key] ?? key}</span>
-                        <span className="text-slate-200">
+                        <span className="num text-slate-200">
                           {d.score.toFixed(1)} / {d.max_score}
                         </span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ink-700/60">
-                        <SpringBar pct={(d.score / d.max_score) * 100} className="bg-accent-400" />
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+                        <SpringBar
+                          pct={(d.score / d.max_score) * 100}
+                          className="bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-400"
+                          delay={i * 0.08}
+                        />
                       </div>
                     </div>
                   ))}
                 </div>
                 {data.uncertainty && (
-                  <p className="mt-4 text-xs leading-relaxed text-slate-400">
+                  <p className="mt-4 text-xs leading-relaxed text-slate-500">
                     Uncertainty calibration: for the{" "}
                     {fmtLacs(data.uncertainty.predicted_price_band_lacs[0])}
                     {data.uncertainty.predicted_price_band_lacs[1] != null
@@ -109,32 +113,34 @@ export default function RiskAssessment() {
       </div>
 
       {data && (
+        <Reveal>
         <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
           <Card className="xl:col-span-2">
             <CardHeader title="Factor breakdown" subtitle="Each factor's score, basis and explanation" />
-            <div className="divide-y divide-line/50">
-              {data.factors.map((f) => (
-                <div key={f.id} className="px-5 py-4">
+            <div className="divide-y divide-white/[0.05]">
+              {data.factors.map((f, i) => (
+                <div key={f.id} className="px-5 py-4 transition-colors duration-200 hover:bg-white/[0.02]">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium text-slate-100">{f.name}</p>
-                    <p className="text-sm text-slate-300">
+                    <p className="num text-sm text-slate-300">
                       {f.score.toFixed(1)}
                       <span className="text-slate-500"> / {f.max_score}</span>
                     </p>
                   </div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink-700/60">
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
                     <SpringBar
                       pct={(f.score / f.max_score) * 100}
+                      delay={i * 0.05}
                       className={
                         f.score === 0
-                          ? "bg-emerald-400"
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-300"
                           : f.score / f.max_score > 0.6
-                            ? "bg-red-400"
-                            : "bg-amber-400"
+                            ? "bg-gradient-to-r from-rose-500 to-rose-300"
+                            : "bg-gradient-to-r from-amber-500 to-amber-300"
                       }
                     />
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500">
                     <span className="text-slate-300">{f.detail}</span> {f.explanation}
                   </p>
                 </div>
@@ -148,7 +154,7 @@ export default function RiskAssessment() {
               <p className="px-5 py-4 text-sm leading-relaxed text-slate-300">
                 {data.narrative}
               </p>
-              <p className="border-t border-line/70 px-5 py-3 text-[11px] leading-relaxed text-slate-500">
+              <p className="border-t border-white/[0.06] px-5 py-3 text-[11px] leading-relaxed text-slate-500">
                 {data.methodology.disclaimer}
               </p>
             </Card>
@@ -157,7 +163,7 @@ export default function RiskAssessment() {
                 <CardHeader title="Missing information warnings" />
                 <ul className="space-y-2 px-5 py-4">
                   {data.warnings.map((w, i) => (
-                    <li key={i} className="flex gap-2 text-xs leading-relaxed text-amber-200">
+                    <li key={i} className="flex gap-2 text-xs leading-relaxed text-amber-200/90">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
                       {w}
                     </li>
@@ -167,10 +173,12 @@ export default function RiskAssessment() {
             )}
             <Card>
               <CardHeader title="Recommended verification actions" />
-              <ul className="space-y-2 px-5 py-4">
+              <ul className="space-y-2.5 px-5 py-4">
                 {data.recommended_actions.map((a, i) => (
-                  <li key={i} className="flex gap-2 text-xs leading-relaxed text-slate-300">
-                    <ClipboardList className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-400" />
+                  <li key={i} className="group flex gap-2.5 text-xs leading-relaxed text-slate-300">
+                    <span className="mt-0 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500/35 to-indigo-500/10 text-indigo-300 ring-1 ring-indigo-300/30 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                      <ClipboardList className="h-3 w-3" />
+                    </span>
                     {a}
                   </li>
                 ))}
@@ -178,6 +186,7 @@ export default function RiskAssessment() {
             </Card>
           </div>
         </div>
+        </Reveal>
       )}
     </div>
   );

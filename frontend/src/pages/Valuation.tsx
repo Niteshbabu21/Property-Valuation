@@ -7,7 +7,7 @@ import { riskService, valuationService } from "../api/services";
 import { useAsync } from "../hooks/useAsync";
 import type { PropertyFeatures, RiskData, ValuationData } from "../types/api";
 import { Card, CardHeader, ErrorState, PageHeader } from "../components/ui";
-import { CountUp } from "../components/motion";
+import { CountUp, SPRING } from "../components/motion";
 import { fmtDateTime, fmtLacs } from "../utils/format";
 import { loadLastProperty, saveLastProperty } from "../utils/storage";
 
@@ -35,7 +35,7 @@ export default function Valuation() {
   return (
     <div>
       <PageHeader
-        eyebrow="01 · ML Valuation"
+        eyebrow="ML Valuation"
         title="Property Valuation"
         description="Enter the property's model features. The estimate is produced by the served XGBoost model through the Flask API — nothing is simulated in the browser."
       />
@@ -56,7 +56,7 @@ export default function Valuation() {
         </Card>
 
         <div className="space-y-4">
-          <Card className={result ? "ring-conic" : ""}>
+          <Card>
             <CardHeader title="Valuation result" subtitle="From POST /api/valuation/predict" />
             <div className="px-5 py-5">
               {predict.error && <ErrorState message={predict.error} />}
@@ -69,19 +69,19 @@ export default function Valuation() {
               )}
               {result && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={SPRING}
                 >
-                  <p className="eyebrow text-slate-400">Estimated price</p>
-                  <p className="num mt-2 bg-gradient-to-r from-slate-50 via-accent-400 to-teal-450 bg-clip-text text-[42px] font-bold leading-none tracking-tight text-transparent">
+                  <p className="eyebrow">Estimated price</p>
+                  <p className="num text-gradient mt-2 font-display text-[44px] font-bold leading-none tracking-tight drop-shadow-[0_0_24px_rgba(139,92,246,0.35)]">
                     <CountUp
                       value={result.predicted_price_lacs}
                       format={fmtLacs}
-                      duration={1.2}
+                      duration={0.9}
                     />
                   </p>
-                  <dl className="mt-4 space-y-2 text-sm">
+                  <dl className="mt-5 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <dt className="text-slate-400">Model</dt>
                       <dd className="text-slate-100">{result.model_id}</dd>
@@ -101,7 +101,7 @@ export default function Valuation() {
                       <dd className="flex items-center gap-1.5 text-slate-100">
                         {result.history_saved ? (
                           <>
-                            <BadgeCheck className="h-4 w-4 text-emerald-400" />
+                            <BadgeCheck className="h-4 w-4 text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
                             Saved
                           </>
                         ) : (
@@ -111,14 +111,14 @@ export default function Valuation() {
                     </div>
                   </dl>
                   {risk?.uncertainty && (
-                    <div className="mt-4 rounded-lg border border-line bg-ink-850 px-4 py-3">
-                      <p className="text-xs font-medium text-slate-300">
+                    <div className="mt-4 rounded-xl border border-indigo-300/20 bg-indigo-400/[0.07] px-4 py-3">
+                      <p className="text-xs font-medium text-indigo-200">
                         Calibrated prediction uncertainty
                       </p>
                       <p className="mt-1 text-xs leading-relaxed text-slate-400">
                         For properties in this predicted price band, 80% of the
                         served model's held-out test errors were within{" "}
-                        <span className="font-medium text-slate-200">
+                        <span className="font-medium text-slate-100">
                           ±{risk.uncertainty.calibrated_ape_p80_pct.toFixed(1)}%
                         </span>{" "}
                         (calibrated on {risk.uncertainty.calibration_n} untouched
@@ -129,27 +129,33 @@ export default function Valuation() {
                   <div className="mt-5 grid grid-cols-1 gap-2">
                     <Link
                       to="/explainability"
-                      className="group flex items-center gap-2 rounded-lg border border-line px-3 py-2.5 text-sm text-slate-200 transition hover:border-accent-500/50 hover:bg-ink-800"
+                      className="group flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/40 hover:bg-violet-400/[0.07] hover:shadow-[0_10px_24px_rgba(168,85,247,0.18)]"
                     >
-                      <BrainCircuit className="h-4 w-4 text-accent-400 transition-transform duration-300 group-hover:scale-110" />
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/35 to-violet-500/10 text-violet-300 ring-1 ring-violet-300/30 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                        <BrainCircuit className="h-4 w-4" />
+                      </span>
                       Explain this valuation (SHAP)
-                      <span className="ml-auto text-slate-500 transition-transform duration-300 group-hover:translate-x-1">→</span>
+                      <span className="ml-auto text-slate-500 transition-all duration-300 group-hover:translate-x-1 group-hover:text-violet-300">→</span>
                     </Link>
                     <Link
                       to="/risk"
-                      className="group flex items-center gap-2 rounded-lg border border-line px-3 py-2.5 text-sm text-slate-200 transition hover:border-amber-500/50 hover:bg-ink-800"
+                      className="group flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300/40 hover:bg-amber-400/[0.07] hover:shadow-[0_10px_24px_rgba(251,191,36,0.15)]"
                     >
-                      <ShieldAlert className="h-4 w-4 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/30 to-amber-400/10 text-amber-300 ring-1 ring-amber-300/30 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                        <ShieldAlert className="h-4 w-4" />
+                      </span>
                       Assess property risk
-                      <span className="ml-auto text-slate-500 transition-transform duration-300 group-hover:translate-x-1">→</span>
+                      <span className="ml-auto text-slate-500 transition-all duration-300 group-hover:translate-x-1 group-hover:text-amber-300">→</span>
                     </Link>
                     <Link
                       to="/tokenisation"
-                      className="group flex items-center gap-2 rounded-lg border border-line px-3 py-2.5 text-sm text-slate-200 transition hover:border-teal-500/50 hover:bg-ink-800"
+                      className="group flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-cyan-400/[0.07] hover:shadow-[0_10px_24px_rgba(34,211,238,0.16)]"
                     >
-                      <Coins className="h-4 w-4 text-teal-400 transition-transform duration-300 group-hover:scale-110" />
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400/30 to-cyan-400/10 text-cyan-300 ring-1 ring-cyan-300/30 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                        <Coins className="h-4 w-4" />
+                      </span>
                       Calculate token supply
-                      <span className="ml-auto text-slate-500 transition-transform duration-300 group-hover:translate-x-1">→</span>
+                      <span className="ml-auto text-slate-500 transition-all duration-300 group-hover:translate-x-1 group-hover:text-cyan-300">→</span>
                     </Link>
                   </div>
                 </motion.div>

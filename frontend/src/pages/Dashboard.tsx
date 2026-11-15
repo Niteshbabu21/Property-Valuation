@@ -25,11 +25,14 @@ import {
   PageHeader,
   RiskBadge,
   StatCard,
+  chartGrid,
+  chartTick,
+  tooltipBox,
 } from "../components/ui";
-import { Reveal } from "../components/motion";
+import { Reveal, Stagger, Item } from "../components/motion";
 import { fmtDate, fmtDateTime, fmtInt, fmtLacs } from "../utils/format";
 
-const RISK_COLORS = { LOW: "#34d399", MEDIUM: "#fbbf24", HIGH: "#f87171" };
+const RISK_COLORS = { LOW: "#34d399", MEDIUM: "#fbbf24", HIGH: "#fb7185" };
 
 export default function Dashboard() {
   const summary = useFetch(() => dashboardService.summary());
@@ -102,40 +105,52 @@ export default function Dashboard() {
         </div>
       )}
       {summary.data && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Total valuations"
-            value={fmtInt(summary.data.total_valuations)}
-            countTo={summary.data.total_valuations}
-            formatCount={fmtInt}
-            hint="Stored prediction records"
-            icon={<Sigma className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Average predicted value"
-            value={fmtLacs(summary.data.average_price_lacs)}
-            countTo={summary.data.average_price_lacs ?? undefined}
-            formatCount={fmtLacs}
-            hint={
-              summary.data.min_price_lacs != null
-                ? `Range ${fmtLacs(summary.data.min_price_lacs)} – ${fmtLacs(summary.data.max_price_lacs)}`
-                : undefined
-            }
-            icon={<IndianRupee className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Served model"
-            value={summary.data.model_id}
-            hint={summary.data.model_name}
-            icon={<Building2 className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Model status"
-            value={summary.data.model_loaded ? "Operational" : "Unavailable"}
-            hint={`Database ${summary.data.database_connected ? "connected" : "unavailable"}`}
-            icon={<Activity className="h-4 w-4" />}
-          />
-        </div>
+        <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Item>
+            <StatCard
+              label="Total valuations"
+              value={fmtInt(summary.data.total_valuations)}
+              countTo={summary.data.total_valuations}
+              formatCount={fmtInt}
+              hint="Stored prediction records"
+              icon={<Sigma className="h-4 w-4" />}
+              tone="indigo"
+            />
+          </Item>
+          <Item>
+            <StatCard
+              label="Average predicted value"
+              value={fmtLacs(summary.data.average_price_lacs)}
+              countTo={summary.data.average_price_lacs ?? undefined}
+              formatCount={fmtLacs}
+              hint={
+                summary.data.min_price_lacs != null
+                  ? `Range ${fmtLacs(summary.data.min_price_lacs)} – ${fmtLacs(summary.data.max_price_lacs)}`
+                  : undefined
+              }
+              icon={<IndianRupee className="h-4 w-4" />}
+              tone="cyan"
+            />
+          </Item>
+          <Item>
+            <StatCard
+              label="Served model"
+              value={summary.data.model_id}
+              hint={summary.data.model_name}
+              icon={<Building2 className="h-4 w-4" />}
+              tone="violet"
+            />
+          </Item>
+          <Item>
+            <StatCard
+              label="Model status"
+              value={summary.data.model_loaded ? "Operational" : "Unavailable"}
+              hint={`Database ${summary.data.database_connected ? "connected" : "unavailable"}`}
+              icon={<Activity className="h-4 w-4" />}
+              tone="emerald"
+            />
+          </Item>
+        </Stagger>
       )}
 
       <Reveal delay={0.08}>
@@ -147,37 +162,44 @@ export default function Dashboard() {
           />
           <div className="h-64 px-3 py-4">
             {history.loading ? (
-              <p className="px-2 text-sm text-slate-500">Loading…</p>
+              <p className="px-2 text-sm text-slate-400">Loading…</p>
             ) : activity.length ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={activity}>
                   <defs>
+                    <linearGradient id="activityStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#818cf8" />
+                      <stop offset="100%" stopColor="#c084fc" />
+                    </linearGradient>
                     <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2f6fed" stopOpacity={0.45} />
-                      <stop offset="100%" stopColor="#2f6fed" stopOpacity={0.02} />
+                      <stop offset="0%" stopColor="#818cf8" stopOpacity={0.38} />
+                      <stop offset="55%" stopColor="#a78bfa" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.01} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="#22304f" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="day" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-                  <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                  <CartesianGrid stroke={chartGrid} strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="day" tick={chartTick} axisLine={{ stroke: chartGrid }} tickLine={false} />
+                  <YAxis tick={chartTick} allowDecimals={false} axisLine={false} tickLine={false} />
                   <Tooltip
-                    contentStyle={{
-                      background: "#101a30",
-                      border: "1px solid #22304f",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
+                    contentStyle={tooltipBox}
+                    cursor={{ stroke: "rgba(165,180,252,0.35)", strokeDasharray: "4 4" }}
                   />
                   <Area
                     type="monotone"
                     dataKey="count"
                     name="Valuations"
-                    stroke="#6ea8ff"
-                    strokeWidth={2}
+                    stroke="url(#activityStroke)"
+                    strokeWidth={2.5}
                     fill="url(#activityFill)"
-                    animationDuration={1200}
-                    dot={{ r: 3, fill: "#6ea8ff", strokeWidth: 0 }}
-                    activeDot={{ r: 5 }}
+                    animationDuration={850}
+                    dot={{ r: 3, fill: "#a5b4fc", strokeWidth: 0 }}
+                    activeDot={{
+                      r: 5.5,
+                      fill: "#6366f1",
+                      stroke: "#c7d2fe",
+                      strokeWidth: 2,
+                      style: { filter: "drop-shadow(0 0 6px rgba(129,140,248,0.9))" },
+                    }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -197,7 +219,7 @@ export default function Dashboard() {
           />
           <div className="h-64 px-3 py-4">
             {riskDist == null ? (
-              <p className="px-2 text-sm text-slate-500">
+              <p className="px-2 text-sm text-slate-400">
                 {history.data?.items.length
                   ? "Scoring recent valuations…"
                   : "No valuations to score yet."}
@@ -212,23 +234,19 @@ export default function Dashboard() {
                     innerRadius={55}
                     outerRadius={85}
                     paddingAngle={3}
-                    stroke="#0d1526"
+                    stroke="rgba(7,11,20,0.85)"
+                    strokeWidth={2}
+                    animationDuration={900}
                   >
                     {riskDist.map((d) => (
                       <Cell
                         key={d.name}
                         fill={RISK_COLORS[d.name as keyof typeof RISK_COLORS]}
+                        fillOpacity={0.88}
                       />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: "#101a30",
-                      border: "1px solid #22304f",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
+                  <Tooltip contentStyle={tooltipBox} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -244,6 +262,7 @@ export default function Dashboard() {
                     style={{
                       background:
                         RISK_COLORS[d.name as keyof typeof RISK_COLORS],
+                      boxShadow: `0 0 8px ${RISK_COLORS[d.name as keyof typeof RISK_COLORS]}`,
                     }}
                   />
                   {d.name} · {d.value}
@@ -255,22 +274,23 @@ export default function Dashboard() {
       </div>
 
       </Reveal>
-      <Reveal delay={0.14}>
+      <Reveal delay={0.16}>
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader
             title="Recent valuations"
             subtitle="Most recent records from the history API"
             action={
-              <Link to="/history" className="text-xs font-medium text-accent-400 hover:text-accent-500">
+              <Link to="/history" className="group inline-flex items-center gap-1 text-xs font-medium text-indigo-300 transition hover:text-indigo-200">
                 View all
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
             }
           />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-line/70 text-[11px] uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-white/[0.07] text-xs font-medium text-slate-400">
                   <th className="px-5 py-3 font-medium">Property</th>
                   <th className="px-5 py-3 font-medium">Predicted price</th>
                   <th className="px-5 py-3 font-medium">When</th>
@@ -278,14 +298,14 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {recent.map((it) => (
-                  <tr key={it.request_id} className="border-b border-line/40 transition-colors last:border-0 hover:bg-ink-800/60">
+                  <tr key={it.request_id} className="border-b border-white/[0.05] transition-all duration-200 last:border-0 hover:translate-x-[3px] hover:bg-indigo-400/[0.06]">
                     <td className="px-5 py-3 text-slate-200">
                       {it.property.LOCALITY}, {it.property.CITY}
                       <span className="block text-xs text-slate-500">
                         {it.property["BHK_NO."]} BHK · {fmtInt(it.property.SQUARE_FT)} sq ft
                       </span>
                     </td>
-                    <td className="px-5 py-3 font-medium text-slate-100">
+                    <td className="num px-5 py-3 font-medium text-slate-50">
                       {fmtLacs(it.predicted_price_lacs)}
                     </td>
                     <td className="px-5 py-3 text-slate-400">
@@ -295,7 +315,7 @@ export default function Dashboard() {
                 ))}
                 {!recent.length && !history.loading && (
                   <tr>
-                    <td colSpan={3} className="px-5 py-8 text-center text-sm text-slate-500">
+                    <td colSpan={3} className="px-5 py-8 text-center text-sm text-slate-400">
                       No valuations recorded yet.
                     </td>
                   </tr>
@@ -307,37 +327,38 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader title="Model performance" subtitle="Served model, measured metrics" />
-          {metrics.loading && <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>}
+          {metrics.loading && <p className="px-5 py-4 text-sm text-slate-400">Loading…</p>}
           {metrics.error && (
-            <p className="px-5 py-4 text-sm text-red-300">{metrics.error}</p>
+            <p className="px-5 py-4 text-sm text-rose-300">{metrics.error}</p>
           )}
           {m && (
             <dl className="space-y-3 px-5 py-4 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-400">Validation R²</dt>
-                <dd className="font-medium text-slate-100">{m.validation.r2.toFixed(4)}</dd>
+                <dd className="num font-display font-medium text-slate-50">{m.validation.r2.toFixed(4)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-400">Grouped CV R²</dt>
-                <dd className="font-medium text-slate-100">
+                <dd className="num font-display font-medium text-slate-50">
                   {m.grouped_cv.r2_mean.toFixed(4)} ± {m.grouped_cv.r2_std.toFixed(4)}
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-400">Test R² (held-out, once)</dt>
-                <dd className="font-medium text-slate-100">{m.test.r2.toFixed(4)}</dd>
+                <dd className="num font-display font-medium text-slate-50">{m.test.r2.toFixed(4)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-400">Test MAE</dt>
-                <dd className="font-medium text-slate-100">{fmtLacs(m.test.mae_lacs)}</dd>
+                <dd className="num font-display font-medium text-slate-50">{fmtLacs(m.test.mae_lacs)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-slate-400">Test RMSE</dt>
-                <dd className="font-medium text-slate-100">{fmtLacs(m.test.rmse_lacs)}</dd>
+                <dd className="num font-display font-medium text-slate-50">{fmtLacs(m.test.rmse_lacs)}</dd>
               </div>
               <div className="pt-1">
-                <Link to="/models" className="text-xs font-medium text-accent-400 hover:text-accent-500">
-                  Full model comparison →
+                <Link to="/models" className="group inline-flex items-center gap-1 text-xs font-medium text-indigo-300 transition hover:text-indigo-200">
+                  Full model comparison
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                 </Link>
               </div>
             </dl>

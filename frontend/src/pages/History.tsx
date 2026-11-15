@@ -10,6 +10,8 @@ import {
   PageHeader,
   RiskBadge,
   Skeleton,
+  btnGhost,
+  inputDark,
 } from "../components/ui";
 import { fmtDateTime, fmtInt, fmtLacs } from "../utils/format";
 
@@ -73,7 +75,7 @@ export default function HistoryPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="07 · Stored Records"
+        eyebrow="Stored Records"
         title="Prediction History"
         description="Stored valuations from GET /api/dashboard/history (server-side pagination). Risk categories are scored per record by the risk API from the stored features and price; search and city filters apply to the loaded page."
       />
@@ -87,19 +89,19 @@ export default function HistoryPage() {
           }
           action={
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+              <div className="group relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500 transition-all duration-300 group-focus-within:rotate-90 group-focus-within:text-indigo-300" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search locality, city, ID…"
-                  className="w-52 rounded-md border border-line bg-ink-850 py-1.5 pl-8 pr-3 text-xs text-slate-100 outline-none placeholder:text-slate-500 focus:border-accent-500"
+                  className={`${inputDark} w-52 py-1.5 pl-8 pr-3 text-xs`}
                 />
               </div>
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="rounded-md border border-line bg-ink-850 px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-accent-500"
+                className={`${inputDark} px-2 py-1.5 text-xs text-slate-200`}
               >
                 <option value="all">All cities</option>
                 {cities.map((c) => (
@@ -136,7 +138,7 @@ export default function HistoryPage() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-line/70 text-[11px] uppercase tracking-wider text-slate-500">
+                  <tr className="border-b border-white/[0.07] text-xs font-medium text-slate-400">
                     <th className="px-5 py-3 font-medium">Property</th>
                     <th className="px-5 py-3 font-medium">Configuration</th>
                     <th className="px-5 py-3 font-medium">Predicted price</th>
@@ -147,7 +149,7 @@ export default function HistoryPage() {
                 </thead>
                 <tbody>
                   {visible.map((it) => (
-                    <tr key={it.request_id} className="border-b border-line/40 last:border-0">
+                    <tr key={it.request_id} className="border-b border-white/[0.05] transition-all duration-200 last:border-0 hover:translate-x-[3px] hover:bg-indigo-400/[0.06]">
                       <td className="px-5 py-3 text-slate-100">
                         {it.property.LOCALITY}
                         <span className="block text-xs text-slate-500">{it.property.CITY}</span>
@@ -155,7 +157,7 @@ export default function HistoryPage() {
                       <td className="px-5 py-3 text-slate-300">
                         {it.property.BHK_CONFIG} · {fmtInt(it.property.SQUARE_FT)} sq ft
                       </td>
-                      <td className="px-5 py-3 font-medium text-slate-100">
+                      <td className="num px-5 py-3 font-medium text-slate-50">
                         {fmtLacs(it.predicted_price_lacs)}
                       </td>
                       <td className="px-5 py-3">
@@ -175,7 +177,7 @@ export default function HistoryPage() {
                   ))}
                   {visible.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-5 py-8 text-center text-sm text-slate-500">
+                      <td colSpan={6} className="px-5 py-8 text-center text-sm text-slate-400">
                         No records on this page match the current filters.
                       </td>
                     </tr>
@@ -183,7 +185,7 @@ export default function HistoryPage() {
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-between border-t border-line/70 px-5 py-3">
+            <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
               <p className="text-xs text-slate-500">
                 Showing {visible.length} of {items.length} loaded records
               </p>
@@ -191,7 +193,7 @@ export default function HistoryPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1.5 text-xs text-slate-200 transition hover:bg-ink-800 disabled:opacity-40"
+                  className={`${btnGhost} inline-flex items-center gap-1 px-2.5 py-1.5 text-xs`}
                 >
                   <ChevronLeft className="h-3.5 w-3.5" /> Previous
                 </button>
@@ -202,7 +204,7 @@ export default function HistoryPage() {
                     )
                   }
                   disabled={!pagination || page >= pagination.pages}
-                  className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1.5 text-xs text-slate-200 transition hover:bg-ink-800 disabled:opacity-40"
+                  className={`${btnGhost} inline-flex items-center gap-1 px-2.5 py-1.5 text-xs`}
                 >
                   Next <ChevronRight className="h-3.5 w-3.5" />
                 </button>

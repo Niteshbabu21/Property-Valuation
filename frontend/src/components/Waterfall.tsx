@@ -9,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Contribution } from "../types/api";
+import { chartGrid, chartTick, tooltipBox } from "./ui";
 
 /** SHAP waterfall in log-price space, built from the API's actual
  * per-feature contributions: baseline → each step → final prediction. */
@@ -41,7 +42,7 @@ export default function Waterfall({
       name: "Baseline",
       bottom: 0,
       height: baseValueLog,
-      color: "#64748b",
+      color: "#7d8db0",
       shap: baseValueLog,
       full: true,
     },
@@ -53,7 +54,7 @@ export default function Waterfall({
       name: c.feature,
       bottom: Math.min(cum, after),
       height: Math.abs(c.shap_log),
-      color: c.shap_log >= 0 ? "#1fbfa8" : "#f87171",
+      color: c.shap_log >= 0 ? "#34d399" : "#fb7185",
       shap: c.shap_log,
     });
     cum = after;
@@ -64,7 +65,7 @@ export default function Waterfall({
       name: `${rest.length} other features`,
       bottom: Math.min(cum, after),
       height: Math.abs(restSum),
-      color: restSum >= 0 ? "#1fbfa8" : "#f87171",
+      color: restSum >= 0 ? "#34d399" : "#fb7185",
       shap: restSum,
     });
     cum = after;
@@ -73,7 +74,7 @@ export default function Waterfall({
     name: "Prediction",
     bottom: 0,
     height: cum,
-    color: "#2f6fed",
+    color: "#818cf8",
     shap: cum,
     full: true,
   });
@@ -82,34 +83,30 @@ export default function Waterfall({
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={steps} margin={{ top: 8, right: 12, left: 0, bottom: 40 }}>
-          <CartesianGrid stroke="#22304f" strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid stroke={chartGrid} strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="name"
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
+            tick={{ fill: "#8b98b8", fontSize: 10 }}
             angle={-32}
             textAnchor="end"
             interval={0}
             height={56}
           />
           <YAxis
-            tick={{ fill: "#94a3b8", fontSize: 11 }}
+            tick={chartTick}
             domain={["dataMin - 0.4", "dataMax + 0.4"]}
             tickFormatter={(v: number) => v.toFixed(1)}
             label={{
               value: "log price",
               angle: -90,
               position: "insideLeft",
-              fill: "#64748b",
+              fill: "#8b98b8",
               fontSize: 11,
             }}
           />
           <Tooltip
-            contentStyle={{
-              background: "#101a30",
-              border: "1px solid #22304f",
-              borderRadius: 8,
-              fontSize: 12,
-            }}
+            contentStyle={tooltipBox}
+            cursor={{ fill: "rgba(129,140,248,0.07)" }}
             formatter={(_v, _n, item) => {
               const s = item.payload as Step;
               return [
@@ -121,9 +118,9 @@ export default function Waterfall({
             }}
           />
           <Bar dataKey="bottom" stackId="w" fill="transparent" isAnimationActive={false} />
-          <Bar dataKey="height" stackId="w" radius={[3, 3, 0, 0]} animationDuration={900}>
+          <Bar dataKey="height" stackId="w" radius={[3, 3, 0, 0]} animationDuration={850}>
             {steps.map((s, i) => (
-              <Cell key={i} fill={s.color} />
+              <Cell key={i} fill={s.color} fillOpacity={s.full ? 0.92 : 0.82} />
             ))}
           </Bar>
         </BarChart>

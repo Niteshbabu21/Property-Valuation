@@ -1,0 +1,13 @@
+{
+  "contract": "PropertyToken",
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "network": "hardhat",
+  "chainId": 31337,
+  "deploymentTxHash": "0xbc62a22c582dbfb1b1f5013a1d4bb9e5edfd0992eab790ddc98b9cd69f2b8c46",
+  "tokenPriceWei": "1000000000000000",
+  "tokenValueInr": 10000,
+  "metadataUri": "https://example.invalid/property-token/{id}.json",
+  "deployedAt": "2026-11-15T05:54:33.416Z",
+  "note": "Local Hardhat network deployment for an academic prototype. These tokens do not legally represent ownership of physical property."
+}

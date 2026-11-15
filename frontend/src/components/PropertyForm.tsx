@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Info } from "lucide-react";
+import { BedDouble, Info, LineChart, MapPin, Tag } from "lucide-react";
 import { modelService } from "../api/services";
 import type { PropertyFeatures, SchemaData } from "../types/api";
+import { IconTile, btnPrimary, type IconTone } from "./ui";
 
 /** A realistic sample listing (Bengaluru) used only as editable form
  * prefill so the workflow can be tried immediately — never as a result. */
@@ -39,9 +40,9 @@ function toValues(p: PropertyFeatures): Values {
 }
 
 const inputCls =
-  "w-full rounded-md border border-line bg-ink-850 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-accent-500 focus:ring-1 focus:ring-accent-500/40";
+  "w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-indigo-400/70 focus:bg-white/[0.06] focus:ring-2 focus:ring-indigo-500/25 focus:shadow-[0_0_0_4px_rgba(99,102,241,0.12)]";
 const labelCls =
-  "mb-1.5 block text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400";
+  "mb-1.5 block text-[13px] font-medium text-slate-300";
 
 function Field({
   label,
@@ -59,8 +60,27 @@ function Field({
       <span className={labelCls}>{label}</span>
       {children}
       {hint && !error && <span className="mt-1 block text-[11px] text-slate-500">{hint}</span>}
-      {error && <span className="mt-1 block text-[11px] text-red-400">{error}</span>}
+      {error && <span className="mt-1 block text-[11px] text-rose-400">{error}</span>}
     </label>
+  );
+}
+
+function SectionTitle({
+  icon,
+  tone,
+  children,
+}: {
+  icon: React.ReactNode;
+  tone: IconTone;
+  children: React.ReactNode;
+}) {
+  return (
+    <h4 className="mb-3.5 flex items-center gap-2.5 font-display text-sm font-semibold tracking-tight text-slate-100">
+      <IconTile tone={tone} size="sm">
+        {icon}
+      </IconTile>
+      {children}
+    </h4>
   );
 }
 
@@ -210,7 +230,7 @@ export default function PropertyForm({
 
   const toggle = (name: string, label: string) => (
     <Field label={label}>
-      <div className="flex overflow-hidden rounded-md border border-line">
+      <div className="flex overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-0.5">
         {[
           ["1", "Yes"],
           ["0", "No"],
@@ -219,10 +239,10 @@ export default function PropertyForm({
             type="button"
             key={v}
             onClick={() => set(name, v)}
-            className={`flex-1 px-3 py-2 text-sm transition ${
+            className={`flex-1 rounded-[10px] px-3 py-1.5 text-sm transition ${
               values[name] === v
-                ? "bg-accent-500/90 font-medium text-white"
-                : "bg-ink-850 text-slate-400 hover:bg-ink-800"
+                ? "bg-gradient-to-r from-indigo-500 to-violet-500 font-medium text-white shadow-[0_4px_14px_rgba(99,102,241,0.4)]"
+                : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
             }`}
           >
             {text}
@@ -239,12 +259,12 @@ export default function PropertyForm({
         const out = validate();
         if (out) onSubmit(out);
       }}
-      className="space-y-6"
+      className="space-y-7"
     >
       <div>
-        <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+        <SectionTitle icon={<MapPin className="h-4 w-4" />} tone="cyan">
           Location
-        </h4>
+        </SectionTitle>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {select("CITY", levels.CITY ?? ["Bangalore"], "City")}
           <Field label="Locality" error={errors.LOCALITY}>
@@ -263,9 +283,9 @@ export default function PropertyForm({
       </div>
 
       <div>
-        <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+        <SectionTitle icon={<BedDouble className="h-4 w-4" />} tone="violet">
           Configuration &amp; size
-        </h4>
+        </SectionTitle>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {number("BHK_NO.", "Bedrooms (BHK)", "1 – 20", "1")}
           {select("BHK_OR_RK", ["BHK", "RK"], "Configuration type")}
@@ -280,9 +300,9 @@ export default function PropertyForm({
       </div>
 
       <div>
-        <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+        <SectionTitle icon={<Tag className="h-4 w-4" />} tone="amber">
           Listing &amp; status
-        </h4>
+        </SectionTitle>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {select("POSTED_BY", levels.POSTED_BY ?? ["Owner", "Dealer", "Builder"],
             "Posted by")}
@@ -290,7 +310,7 @@ export default function PropertyForm({
           {toggle("RERA", "RERA registered (per listing)")}
           {toggle("RESALE", "Resale property")}
           <Field label="Ready to move" hint="Derived from construction status — not a separate model input">
-            <div className="rounded-md border border-line/70 bg-ink-900 px-3 py-2 text-sm text-slate-300">
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-slate-200">
               {values.UNDER_CONSTRUCTION === "0" ? "Yes" : "No"}
             </div>
           </Field>
@@ -298,9 +318,9 @@ export default function PropertyForm({
       </div>
 
       <div>
-        <h4 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+        <SectionTitle icon={<LineChart className="h-4 w-4" />} tone="emerald">
           Market evidence (model features)
-        </h4>
+        </SectionTitle>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {number("CITY_FREQ", "City listing frequency", "Listings for this city in training data", "1")}
           {number("LOCALITY_FREQ", "Locality frequency", "Listings for this locality in training data", "1")}
@@ -308,7 +328,7 @@ export default function PropertyForm({
           {number("LAT_LON_INTERACTION", "Latitude × longitude", "Auto-derived; editable")}
         </div>
         <p className="mt-3 flex items-start gap-2 text-[11px] leading-relaxed text-slate-500">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-300" />
           These fields are the exact inputs of the trained model — including
           the evidence features its preprocessing pipeline derived from the
           training data. Values are validated again by the backend against
@@ -316,11 +336,11 @@ export default function PropertyForm({
         </p>
       </div>
 
-      <div className="flex items-center justify-end gap-3 border-t border-line/70 pt-4">
+      <div className="flex items-center justify-end gap-3 border-t border-white/[0.06] pt-4">
         <button
           type="submit"
           disabled={submitting}
-          className="btn-shine rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(47,111,237,0.7)] transition hover:bg-accent-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${btnPrimary} px-6 py-2.5 text-sm`}
         >
           {submitting ? "Working…" : submitLabel}
         </button>

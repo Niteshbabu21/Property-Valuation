@@ -4,7 +4,7 @@ import { Blocks, CheckCircle2 } from "lucide-react";
 import { chainService } from "../api/services";
 import { useAsync, useFetch } from "../hooks/useAsync";
 import type { ChainRecord, PropertyFeatures } from "../types/api";
-import { Card, CardHeader } from "./ui";
+import { Card, CardHeader, btnGhost, btnPrimary } from "./ui";
 import { fmtINR, fmtInt } from "../utils/format";
 import { ApiException } from "../api/client";
 
@@ -53,12 +53,19 @@ export default function ChainRegistration({
         subtitle="Steps 6–7 · via the Flask bridge (POST /api/chain/register, /api/chain/mint)"
         action={
           <span
-            className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
               connected
-                ? "border-emerald-800 bg-emerald-950/50 text-emerald-300"
-                : "border-amber-800 bg-amber-950/50 text-amber-300"
+                ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-300"
+                : "border-amber-300/30 bg-amber-400/10 text-amber-300"
             }`}
           >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                connected
+                  ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+                  : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]"
+              }`}
+            />
             {status.loading
               ? "checking chain…"
               : connected
@@ -73,7 +80,7 @@ export default function ChainRegistration({
             The local Hardhat chain is not reachable
             {status.data?.connect_error ? ` (${status.data.connect_error})` : ""}.
             Start it with{" "}
-            <code className="rounded bg-ink-800 px-1.5 py-0.5 text-xs text-slate-200">
+            <code className="rounded-md bg-white/[0.07] px-1.5 py-0.5 text-xs text-cyan-300 ring-1 ring-white/10">
               npx hardhat node
             </code>{" "}
             in the blockchain module and deploy the contract — registration
@@ -90,7 +97,7 @@ export default function ChainRegistration({
             <button
               onClick={onRegister}
               disabled={!property || register.loading}
-              className="inline-flex items-center gap-2 rounded-md bg-accent-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`${btnPrimary} inline-flex items-center gap-2 px-4 py-2 text-sm`}
             >
               <Blocks className="h-4 w-4" />
               {register.loading ? "Registering…" : "Register on chain"}
@@ -98,7 +105,7 @@ export default function ChainRegistration({
           </div>
         )}
         {(actionError || register.error || mint.error) && (
-          <p className="mt-3 rounded-lg border border-red-900/50 bg-red-950/20 px-4 py-3 text-sm text-red-200">
+          <p className="mt-3 rounded-xl border border-rose-400/25 bg-rose-500/[0.08] px-4 py-3 text-sm text-rose-200">
             {actionError ?? register.error ?? mint.error}
           </p>
         )}
@@ -107,7 +114,7 @@ export default function ChainRegistration({
             <dl className="grid grid-cols-1 gap-x-8 gap-y-2.5 text-sm sm:grid-cols-2">
               <div className="flex justify-between gap-3">
                 <dt className="text-slate-400">Chain property ID</dt>
-                <dd className="font-medium text-slate-100">{record.chain_property_id}</dd>
+                <dd className="font-medium text-slate-50">{record.chain_property_id}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-slate-400">Valuation recorded</dt>
@@ -137,15 +144,15 @@ export default function ChainRegistration({
                 </dd>
               </div>
             </dl>
-            <div className="mt-3 space-y-1.5 text-xs text-slate-400">
+            <div className="mt-3 space-y-1.5 text-xs text-slate-500">
               <p>
                 Register tx (block {record.register_block}):{" "}
-                <span className="break-all font-mono text-slate-200">{record.register_tx}</span>
+                <span className="break-all font-mono text-slate-300">{record.register_tx}</span>
               </p>
               {record.mint_tx && (
                 <p>
                   Mint tx:{" "}
-                  <span className="break-all font-mono text-slate-200">{record.mint_tx}</span>
+                  <span className="break-all font-mono text-slate-300">{record.mint_tx}</span>
                 </p>
               )}
               <p className="text-slate-500">
@@ -157,14 +164,14 @@ export default function ChainRegistration({
                 <button
                   onClick={onMint}
                   disabled={mint.loading}
-                  className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-500 disabled:opacity-50"
+                  className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-[0_10px_28px_rgba(16,185,129,0.35)] transition hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                 >
                   {mint.loading ? "Minting…" : `Mint ${fmtInt(record.token_supply)} tokens`}
                 </button>
               )}
               <Link
                 to="/blockchain"
-                className="rounded-md border border-line px-4 py-2 text-sm text-slate-200 transition hover:bg-ink-800"
+                className={`${btnGhost} px-4 py-2 text-sm`}
               >
                 Buy / transfer in Blockchain Explorer
               </Link>

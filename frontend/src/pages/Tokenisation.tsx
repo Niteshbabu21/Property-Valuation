@@ -12,10 +12,14 @@ import {
   ErrorState,
   PageHeader,
   StatCard,
+  btnPrimary,
+  inputDark,
 } from "../components/ui";
+import { SpringBar } from "../components/motion";
 import { fmtINR, fmtInt, fmtLacs } from "../utils/format";
 import { loadLastProperty } from "../utils/storage";
-import { SpringBar } from "../components/motion";
+
+const CHIP_CAP = 48;
 
 export default function Tokenisation() {
   const [mode, setMode] = useState<"value" | "property">("value");
@@ -48,10 +52,12 @@ export default function Tokenisation() {
       ? ((data.token_supply * data.token_denomination_inr) / data.valuation_inr) * 100
       : 0;
 
+  const chipCount = data ? Math.min(data.token_supply, CHIP_CAP) : 0;
+
   return (
     <div>
       <PageHeader
-        eyebrow="04 · Fractional Tokens"
+        eyebrow="Fractional Tokens"
         title="Tokenisation"
         description="Fractional token supply from a valuation: supply = floor(value ÷ ₹10,000 denomination). This is the prototype calculation the smart-contract stage will mirror on-chain — no tokens are issued here."
       />
@@ -59,7 +65,7 @@ export default function Tokenisation() {
         <Card className="xl:col-span-2">
           <CardHeader title="Calculate token supply" subtitle="POST /api/token/calculate" />
           <div className="px-5 py-5">
-            <div className="mb-5 flex overflow-hidden rounded-md border border-line">
+            <div className="mb-5 flex rounded-xl border border-white/10 bg-white/[0.03] p-1">
               {(
                 [
                   ["value", "From a valuation amount"],
@@ -69,10 +75,10 @@ export default function Tokenisation() {
                 <button
                   key={m}
                   onClick={() => setMode(m)}
-                  className={`flex-1 px-3 py-2 text-sm transition ${
+                  className={`flex-1 rounded-[10px] px-3 py-2 text-sm transition ${
                     mode === m
-                      ? "bg-accent-500/90 font-medium text-white"
-                      : "bg-ink-850 text-slate-400 hover:bg-ink-800"
+                      ? "bg-gradient-to-r from-indigo-500 to-violet-500 font-medium text-white shadow-[0_6px_18px_rgba(99,102,241,0.4)]"
+                      : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
                   }`}
                 >
                   {label}
@@ -83,7 +89,7 @@ export default function Tokenisation() {
             {mode === "value" ? (
               <div className="space-y-4">
                 <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                  <span className="mb-1.5 block text-[13px] font-medium text-slate-300">
                     Property valuation (₹ lakhs)
                   </span>
                   <input
@@ -92,12 +98,12 @@ export default function Tokenisation() {
                     value={valuationInput}
                     onChange={(e) => setValuationInput(e.target.value)}
                     placeholder="e.g. 85.37"
-                    className="w-full rounded-md border border-line bg-ink-850 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-accent-500 focus:ring-1 focus:ring-accent-500/40"
+                    className={`${inputDark} w-full px-3 py-2 text-sm`}
                   />
                 </label>
                 {(history.data?.items.length ?? 0) > 0 && (
                   <div>
-                    <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                    <p className="mb-2 text-[13px] font-medium text-slate-300">
                       Or use a recent valuation
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -107,7 +113,7 @@ export default function Tokenisation() {
                           onClick={() =>
                             setValuationInput(String(it.predicted_price_lacs))
                           }
-                          className="rounded-full border border-line px-3 py-1 text-xs text-slate-300 transition hover:bg-ink-800"
+                          className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-cyan-400/[0.08] hover:text-white"
                         >
                           {it.property.LOCALITY}, {it.property.CITY} ·{" "}
                           {fmtLacs(it.predicted_price_lacs)}
@@ -123,7 +129,7 @@ export default function Tokenisation() {
                   <button
                     onClick={submitValue}
                     disabled={loading}
-                    className="btn-shine rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-medium text-white shadow-[0_8px_24px_-10px_rgba(47,111,237,0.7)] transition hover:bg-accent-400 disabled:opacity-50"
+                    className={`${btnPrimary} px-5 py-2.5 text-sm`}
                   >
                     {loading ? "Calculating…" : "Calculate supply"}
                   </button>
@@ -158,6 +164,7 @@ export default function Tokenisation() {
                 formatCount={fmtInt}
                 hint={`tokens of ${fmtINR(data.token_denomination_inr)} each`}
                 icon={<Coins className="h-4 w-4" />}
+                tone="cyan"
               />
               <Card className="px-5 py-4">
                 <dl className="space-y-2.5 text-sm">
@@ -177,7 +184,7 @@ export default function Tokenisation() {
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-slate-400">Exact token amount</dt>
-                    <dd className="text-slate-100">{data.exact_token_amount}</dd>
+                    <dd className="num text-slate-100">{data.exact_token_amount}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-slate-400">Rounding</dt>
@@ -186,53 +193,74 @@ export default function Tokenisation() {
                     </dd>
                   </div>
                 </dl>
-                <div className="mt-4">
-                  <div className="flex justify-between text-xs text-slate-400">
-                    <span>Fractional representation</span>
-                    <span>{fractionPct.toFixed(2)}% tokenised</span>
+                <div className="mt-4 border-t border-white/[0.06] pt-4">
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-sm font-medium text-slate-100">
+                      {fmtInt(data.token_supply)} tokens
+                      <span className="font-normal text-slate-400">
+                        {" "}of {fmtINR(data.token_denomination_inr)} each
+                      </span>
+                    </p>
+                    <p className="num text-xs text-slate-400">
+                      {fractionPct.toFixed(2)}% tokenised
+                    </p>
                   </div>
-                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink-700/60">
-                    <SpringBar pct={fractionPct} className="bg-gradient-to-r from-accent-500 to-teal-450" />
+
+                  {/* Token chips cascade — one chip per token, capped for layout */}
+                  <div className="mt-3.5 flex flex-wrap gap-1.5" aria-hidden>
+                    {Array.from({ length: chipCount }).map((_, i) => (
+                      <motion.span
+                        key={`${data.token_supply}-${i}`}
+                        initial={{ opacity: 0, scale: 0.4, y: 6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 24,
+                          delay: Math.min(i * 0.016, 0.8),
+                        }}
+                        className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-cyan-400/50 via-indigo-500/50 to-violet-500/50 text-cyan-100 ring-1 ring-white/20 shadow-[0_2px_10px_rgba(56,189,248,0.25)]"
+                      >
+                        <Coins className="h-3 w-3" />
+                      </motion.span>
+                    ))}
                   </div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+                  {data.token_supply > CHIP_CAP && (
+                    <p className="mt-2 text-[11px] text-slate-500">
+                      Showing the first {CHIP_CAP} of {fmtInt(data.token_supply)} tokens.
+                    </p>
+                  )}
+
+                  <div className="mt-3.5 h-2.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+                    <SpringBar
+                      pct={fractionPct}
+                      className="bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-500"
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5 text-slate-300">
+                      <span className="h-2 w-2 rounded-sm bg-gradient-to-br from-cyan-400 to-violet-500" />
+                      Tokenised {fmtINR(data.token_supply * data.token_denomination_inr)}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-slate-400">
+                      <span className="h-2 w-2 rounded-sm bg-white/[0.14] ring-1 ring-white/20" />
+                      Residual {fmtINR(data.rounding.remainder_inr)}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-xs leading-relaxed text-slate-500">
                     Each token represents a {fmtINR(data.token_denomination_inr)}{" "}
                     fraction of the valuation. The remainder stays untokenised
                     so issued supply never exceeds the property's value.
                   </p>
-                  <div className="mt-4 border-t border-line/60 pt-4">
-                    <div className="flex flex-wrap gap-1.5">
-                      {Array.from({
-                        length: Math.min(48, data.token_supply),
-                      }).map((_, i) => (
-                        <motion.span
-                          key={`${data.token_supply}-${i}`}
-                          initial={{ scale: 0, rotate: -30, opacity: 0 }}
-                          animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                          transition={{
-                            delay: 0.3 + i * 0.014,
-                            type: "spring",
-                            stiffness: 380,
-                            damping: 20,
-                          }}
-                          className="flex h-6 w-6 items-center justify-center rounded-full border border-teal-450/40 bg-teal-450/10 font-mono text-[8px] text-teal-300"
-                        >
-                          ₹
-                        </motion.span>
-                      ))}
-                    </div>
-                    <p className="mt-2.5 font-mono text-[10px] tracking-wide text-slate-500">
-                      {data.token_supply > 48
-                        ? `FIRST 48 OF ${fmtInt(data.token_supply)} TOKENS · 1 CHIP = 1 TOKEN OF ${fmtINR(data.token_denomination_inr)}`
-                        : `1 CHIP = 1 TOKEN OF ${fmtINR(data.token_denomination_inr)}`}
-                    </p>
-                  </div>
                 </div>
               </Card>
-              <div className="flex gap-2 rounded-xl border border-line bg-ink-900 px-4 py-3 text-[11px] leading-relaxed text-slate-400">
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-400" />
-                {data.prototype_note} On-chain issuance happens in the
-                blockchain stage (local Hardhat network); see the Blockchain
-                Explorer for network status.
+              <div className="flex gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.05] px-4 py-3 text-xs leading-relaxed text-slate-400">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan-300" />
+                <span>
+                  {data.prototype_note} On-chain issuance happens in the
+                  blockchain stage (local Hardhat network); see the Blockchain
+                  Explorer for network status.
+                </span>
               </div>
             </>
           ) : (
