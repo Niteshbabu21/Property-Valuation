@@ -8,6 +8,6 @@
   "tokenPriceWei": "1000000000000000",
   "tokenValueInr": 10000,
   "metadataUri": "https://example.invalid/property-token/{id}.json",
-  "deployedAt": "2026-11-11T17:44:22.042Z",
+  "deployedAt": "2026-11-15T09:54:34.910Z",
   "note": "Local Hardhat network deployment for an academic prototype. These tokens do not legally represent ownership of physical property."
 }
